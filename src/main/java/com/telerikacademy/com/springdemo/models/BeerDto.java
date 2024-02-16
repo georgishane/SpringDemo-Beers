@@ -13,7 +13,18 @@ public class BeerDto {
     @Positive(message = "Abv should be positive")
     private double abv;
 
+    @Positive(message = "StyleId should be positive")
+    private int styleId;
+
     public BeerDto() {
+    }
+
+    public int getStyleId() {
+        return styleId;
+    }
+
+    public void setStyleId(int styleId) {
+        this.styleId = styleId;
     }
 
     public String getName() {

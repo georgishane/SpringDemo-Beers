@@ -5,6 +5,7 @@ import com.telerikacademy.com.springdemo.exceptions.DuplicateNonUnique;
 import com.telerikacademy.com.springdemo.exceptions.EntityNotFoundException;
 import com.telerikacademy.com.springdemo.models.Beer;
 import com.telerikacademy.com.springdemo.models.BeerDto;
+import com.telerikacademy.com.springdemo.services.ModelMapper;
 import com.telerikacademy.com.springdemo.services.BeerService;
 
 import jakarta.validation.Valid;
@@ -23,10 +24,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/beers")
 public class BeerController {
 
-    private BeerService service;
+    private final BeerService service;
+    private final ModelMapper modelMapper;
     @Autowired
-    public BeerController(BeerService service) {
+    public BeerController(BeerService service, ModelMapper modelMapper) {
             this.service = service;
+        this.modelMapper = modelMapper;
     }
 
     @Transactional
@@ -71,9 +74,7 @@ public class BeerController {
     public Beer createBeer(@Valid @RequestBody BeerDto beerDto){
         try {
 
-            Beer beer = new Beer();
-            beer.setName(beerDto.getName());
-            beer.setAbv(beerDto.getAbv());
+            Beer beer = modelMapper.fromDto(beerDto);
             service.createBeer(beer);
             return beer;
 
@@ -87,10 +88,7 @@ public class BeerController {
     public Beer update(@PathVariable int id,  @Valid @RequestBody BeerDto beerDto){
 
         try {
-            Beer beer = service.getById(id);
-            beer.setName(beerDto.getName());
-            beer.setAbv(beerDto.getAbv());
-
+            Beer beer = modelMapper.fromDto(beerDto, id);
             service.updateBeer(beer);
             return beer;
         } catch (DuplicateNonUnique e){

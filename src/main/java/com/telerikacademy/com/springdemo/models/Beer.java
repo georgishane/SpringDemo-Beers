@@ -1,26 +1,25 @@
 package com.telerikacademy.com.springdemo.models;
 
-import org.springframework.data.annotation.Id;
 import jakarta.persistence.*;
 
 
 @Entity
 @Table(name = "beers")
 public class  Beer {
-
-    @jakarta.persistence.Id
     @Id
-    @Column(name = "beer_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "beer_id")
     private int id;
 
     @Column(name = "name")
-
     private String name;
 
     @Column(name = "abv")
-
     private double abv;
+
+    @ManyToOne
+    @JoinColumn(name = "style_id")
+    private Style style;
 
     public Beer(int id, String name, double abv) {
         this.id = id;
@@ -30,6 +29,14 @@ public class  Beer {
 
     public Beer() {
 
+    }
+
+    public Style getStyle() {
+        return style;
+    }
+
+    public void setStyle(Style style) {
+        this.style = style;
     }
 
     public int getId() {
