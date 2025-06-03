@@ -7,7 +7,7 @@ import java.util.*;
 
 public class BeerMapRepositoryImpl implements BeerRepository{
 
-    private Map<Integer, Beer> beers;
+    private final Map<Integer, Beer> beers;
 
     public BeerMapRepositoryImpl (){
 

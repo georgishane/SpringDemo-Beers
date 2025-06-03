@@ -19,14 +19,20 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-thymeleaf
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: '3.2.4'
+
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.0.7'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     // https://mvnrepository.com/artifact/org.hibernate/hibernate-core
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '6.4.1.Final', ext: 'pom'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // https://mvnrepository.com/artifact/jakarta.json.bind/jakarta.json.bind-api
+    implementation group: 'jakarta.json.bind', name: 'jakarta.json.bind-api', version: '3.0.0'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs '-XX:+EnableDynamicAgentLoading'
 }

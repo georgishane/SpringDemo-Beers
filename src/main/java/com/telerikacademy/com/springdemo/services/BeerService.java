@@ -1,7 +1,7 @@
 package com.telerikacademy.com.springdemo.services;
 
 import com.telerikacademy.com.springdemo.models.Beer;
-import org.springframework.stereotype.Service;
+import com.telerikacademy.com.springdemo.models.User;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public interface BeerService {
 
     void createBeer(Beer beer);
 
-    void updateBeer(Beer beer);
+    void updateBeer(Beer beer, User user);
 
-    void delete(int id);
+    void delete(int id, User user);
 }

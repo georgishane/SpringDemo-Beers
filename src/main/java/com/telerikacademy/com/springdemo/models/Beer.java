@@ -1,6 +1,9 @@
 package com.telerikacademy.com.springdemo.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.Objects;
 
 
 @Entity
@@ -20,6 +23,11 @@ public class  Beer {
     @ManyToOne
     @JoinColumn(name = "style_id")
     private Style style;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     public Beer(int id, String name, double abv) {
         this.id = id;
@@ -55,6 +63,19 @@ public class  Beer {
         this.id = id;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Beer beer = (Beer) o;
+        return id == beer.id && Double.compare(abv, beer.abv) == 0 && Objects.equals(name, beer.name) && Objects.equals(style, beer.style) && Objects.equals(createdBy, beer.createdBy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, abv, style, createdBy);
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -63,5 +84,11 @@ public class  Beer {
         this.abv = abv;
     }
 
+    public User getCreatedBy() {
+        return createdBy;
+    }
 
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
 }

@@ -69,15 +69,15 @@ public class HibernateConfig {
     }
 
 
-    public Properties hibernateProperties(){
-
-        Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty("hibernate.dialect","org.hibernate.dialect.MySQLDialect");
-
-        //Code-first optional config
-//        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
-        return hibernateProperties;
-    }
+//    public Properties hibernateProperties(){
+//
+//        Properties hibernateProperties = new Properties();
+//        hibernateProperties.setProperty("hibernate.dialect","org.hibernate.dialect.MySQLDialect");
+//
+//        //Code-first optional config
+////        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+//        return hibernateProperties;
+//    }
 
 
 }

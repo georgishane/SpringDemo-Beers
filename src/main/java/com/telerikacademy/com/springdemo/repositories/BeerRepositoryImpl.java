@@ -1,5 +1,4 @@
 package com.telerikacademy.com.springdemo.repositories;
-import com.telerikacademy.com.springdemo.exceptions.DuplicateEntityException;
 import com.telerikacademy.com.springdemo.exceptions.DuplicateNonUnique;
 import com.telerikacademy.com.springdemo.exceptions.EntityNotFoundException;
 import com.telerikacademy.com.springdemo.models.Beer;
@@ -55,7 +54,14 @@ public class BeerRepositoryImpl implements BeerRepository {
 
     @Override
     public void create(Beer beer){
-              entityManager.persist(beer);
+        try
+        {
+            entityManager.persist(beer);
+        }
+        catch (EntityNotFoundException e){
+            throw new EntityNotFoundException("Beer", "name");
+        }
+
     }
 
     @Override
