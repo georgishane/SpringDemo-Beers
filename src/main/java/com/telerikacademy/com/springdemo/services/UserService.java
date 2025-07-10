@@ -13,4 +13,6 @@ public interface UserService {
     void addToWishList(User user, Beer beer);
 
     User getByUserName(String username);
+
+    void create(User user);
 }

@@ -51,7 +51,7 @@ public class BeerMapRepositoryImpl implements BeerRepository{
     }
 
     @Override
-    public void delete(int id) {
+    public void deleteById(int id) {
         beers.remove(id);
     }
 }

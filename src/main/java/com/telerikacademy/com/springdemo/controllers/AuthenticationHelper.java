@@ -21,15 +21,18 @@ public class AuthenticationHelper {
     }
 
     public User tryGetUser(HttpHeaders headers){
-        if (!headers.containsKey(AUTHORIZATION_HEADER_NAME)){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "The requested resource requires authentication");
+        String username = headers.getFirst(AUTHORIZATION_HEADER_NAME);
+        if (username == null || username.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or empty Authorization header");
         }
 
         try {
-            String username = headers.getFirst(AUTHORIZATION_HEADER_NAME);
-            return userService.getByUserName(username);
-        } catch (EntityNotFoundException e){
+            User user = userService.getByUserName(username);
+            if (!user.hasRole("ADMIN")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin privileges required");
+            }
+            return user;
+        } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username");
         }
     }

@@ -13,6 +13,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -37,13 +40,20 @@ public class UserController {
         this.authenticationHelper = authenticationHelper1;
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<User> getAll(){
         return userService.getAll();
     }
 
-
+      @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/test-admin")
+    public String adminOnlyTest() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authenticated user: " + auth.getName());
+        System.out.println("Authorities: " + auth.getAuthorities());
+        return "You are an admin!";
+    }
 
     @GetMapping("/{id}")
     public User getUserById(@RequestHeader HttpHeaders headers, @PathVariable int id){
@@ -56,7 +66,6 @@ public class UserController {
         }
 
     }
-
 
     @GetMapping("/{id}/wish-list")
     public Set<Beer> getUserWishList(@RequestHeader HttpHeaders headers, @PathVariable int id){

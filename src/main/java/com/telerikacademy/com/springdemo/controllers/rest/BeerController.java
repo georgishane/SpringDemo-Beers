@@ -9,6 +9,7 @@ import com.telerikacademy.com.springdemo.models.Beer;
 import com.telerikacademy.com.springdemo.models.BeerDto;
 import com.telerikacademy.com.springdemo.models.RatingDto;
 import com.telerikacademy.com.springdemo.models.User;
+import com.telerikacademy.com.springdemo.repositories.BeerRepositoryImpl;
 import com.telerikacademy.com.springdemo.services.ModelMapper;
 import com.telerikacademy.com.springdemo.services.BeerService;
 
@@ -19,6 +20,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -37,14 +39,16 @@ public class BeerController {
     private final ModelMapper modelMapper;
 
     private final AuthenticationHelper authenticationHelper;
+    private final BeerRepositoryImpl beerRepositoryImpl;
 
     @Autowired
-    public BeerController(BeerService beerService, ModelMapper modelMapper, UserService userService, RatingService ratingService, AuthenticationHelper authenticationHelper) {
+    public BeerController(BeerService beerService, ModelMapper modelMapper, UserService userService, RatingService ratingService, AuthenticationHelper authenticationHelper, BeerRepositoryImpl beerRepositoryImpl) {
         this.beerService = beerService;
         this.modelMapper = modelMapper;
         this.userService = userService;
         this.ratingService = ratingService;
         this.authenticationHelper = authenticationHelper;
+        this.beerRepositoryImpl = beerRepositoryImpl;
     }
 
 
@@ -141,7 +145,7 @@ public class BeerController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void delete(@RequestHeader HttpHeaders headers, @PathVariable int id) {
 

@@ -76,7 +76,12 @@ public class BeerRepositoryImpl implements BeerRepository {
     }
 
     @Override
-    public void delete(int id) {
+    public void deleteById(int id) {
 
+        Beer beer = entityManager.find(Beer.class, id);
+        if (beer == null) {
+            throw new EntityNotFoundException("Beer", id);
+        }
+        entityManager.remove(beer);
     }
 }

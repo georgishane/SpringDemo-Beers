@@ -1,14 +1,12 @@
 package com.telerikacademy.com.springdemo.repositories;
 
 import com.telerikacademy.com.springdemo.models.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface UserRepository {
-    List <User> getAll();
-    User getById(int id);
+public interface UserRepository extends JpaRepository<User, Integer> {
+    Optional<User> findByUsername(String username);
 
-    void update(User user);
-
-    User getByUserName(String username);
 }

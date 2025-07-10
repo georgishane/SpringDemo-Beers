@@ -10,5 +10,5 @@ public interface Repository <T>{
 
     void update(T beer);
 
-    void delete(int id);
+    void deleteById(int id);
 }

@@ -19,7 +19,7 @@ public class User {
     private String username;
 
     @JsonIgnore
-    @Column(name = "password")
+    @Column(name = "password",length = 255, nullable = false)
     private String password;
 
 
@@ -38,7 +38,7 @@ public class User {
    )
    private PersonalInfo personalInfo;
 
-   @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
    @JoinTable(
            name = "users_roles",
            joinColumns = @JoinColumn(name = "user_id"),
@@ -97,9 +97,9 @@ public class User {
     public void setPersonalInfo(PersonalInfo personalInfo) {
         this.personalInfo = personalInfo;
     }
-    public boolean isAdmin(){
+    public boolean hasRole(String roleName){
 
-        return getRoles().stream().anyMatch(r -> r.getName().equals("Admin"));
+        return getRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase(roleName));
     }
 
     @Override

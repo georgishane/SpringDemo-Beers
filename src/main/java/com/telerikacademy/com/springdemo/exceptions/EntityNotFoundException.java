@@ -12,12 +12,12 @@ public class EntityNotFoundException extends RuntimeException {
 
     }
 
-    public EntityNotFoundException(String user, String beer) {
-        super(String.format("Rating with user %s and beer %s was not found.", user, beer));
-    }
-
     public EntityNotFoundException(String beer) {
         super(String.format("Rating for beer %s was not found.", beer));
+    }
+
+    public EntityNotFoundException(String entity, Object identifier) {
+        super(String.format("%s with identifier '%s' was not found.", entity, identifier));
     }
 
 }

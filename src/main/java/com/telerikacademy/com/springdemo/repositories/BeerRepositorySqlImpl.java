@@ -138,7 +138,7 @@ public class BeerRepositorySqlImpl implements BeerRepository{
     }
 
     @Override
-    public void delete(int id) {
+    public void deleteById(int id) {
 
     }
    private List<Beer> getBeers(ResultSet resultSet) throws SQLException {

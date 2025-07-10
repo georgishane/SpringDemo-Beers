@@ -1,0 +1,66 @@
+package com.telerikacademy.com.springdemo.security;
+
+import com.telerikacademy.com.springdemo.models.Role;
+import com.telerikacademy.com.springdemo.models.User;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+public class AppUserDetails implements UserDetails {
+
+    private static final Logger log = LogManager.getLogger(AppUserDetails.class);
+    private final User user;
+
+    public AppUserDetails(User user) {
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Debug printout
+        user.getRoles().forEach(r -> System.out.println("User role from DB: " + r.getName()));
+        return user.getRoles().stream()
+                .map(Role::getName)
+                .map(roleName -> new SimpleGrantedAuthority("ROLE_" + roleName.toUpperCase()))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getUsername();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}

@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.NonUniqueResultException;
 
 import java.util.List;
 
@@ -88,20 +87,20 @@ public class BeerServiceImpl implements BeerService {
 
         repository.update(beer);
     }
-
+    @Transactional
     @Override
     public void delete(int id, User user) {
         Beer beer = repository.getById(id);
 
-        if (!beer.getCreatedBy().equals(user) || !user.isAdmin()) {
+        if (!beer.getCreatedBy().equals(user) || !user.hasRole("ADMIN")) {
             throw new UnauthorizedOperationException("Only creator or admin can modify a beer");
         }
-        repository.delete(id);
+        repository.deleteById(id);
 
     }
 
     private void verifyCanModify(Beer beer, User user) {
-        if (!beer.getCreatedBy().equals(user) && !user.isAdmin()) {
+        if (!beer.getCreatedBy().equals(user) && !user.hasRole("ADMIN")) {
             throw new UnauthorizedOperationException("Only creator and admin can modify a beer");
         }
     }
