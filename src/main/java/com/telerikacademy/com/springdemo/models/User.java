@@ -32,7 +32,7 @@ public class User {
     )
     private Set<Beer> wishList;
 
-   @OneToOne
+   @OneToOne(cascade = CascadeType.ALL)
    @JoinColumn(
            name = "personal_info"
    )

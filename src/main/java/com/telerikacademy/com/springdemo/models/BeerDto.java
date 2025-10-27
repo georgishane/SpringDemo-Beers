@@ -3,7 +3,11 @@ package com.telerikacademy.com.springdemo.models;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 public class BeerDto {
 
     @NotNull(message = "Name can't be empty")
@@ -19,27 +23,4 @@ public class BeerDto {
     public BeerDto() {
     }
 
-    public int getStyleId() {
-        return styleId;
-    }
-
-    public void setStyleId(int styleId) {
-        this.styleId = styleId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getAbv() {
-        return abv;
-    }
-
-    public void setAbv(double abv) {
-        this.abv = abv;
-    }
 }

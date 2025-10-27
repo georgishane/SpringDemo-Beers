@@ -2,14 +2,10 @@ package com.telerikacademy.com.springdemo.controllers.rest;
 
 import com.telerikacademy.com.springdemo.controllers.AuthenticationHelper;
 import com.telerikacademy.com.springdemo.exceptions.DuplicateEntityException;
-import com.telerikacademy.com.springdemo.exceptions.DuplicateNonUnique;
 import com.telerikacademy.com.springdemo.exceptions.EntityNotFoundException;
 import com.telerikacademy.com.springdemo.exceptions.UnauthorizedOperationException;
-import com.telerikacademy.com.springdemo.models.Beer;
-import com.telerikacademy.com.springdemo.models.BeerDto;
-import com.telerikacademy.com.springdemo.models.RatingDto;
-import com.telerikacademy.com.springdemo.models.User;
-import com.telerikacademy.com.springdemo.repositories.BeerRepositoryImpl;
+import com.telerikacademy.com.springdemo.models.*;
+import com.telerikacademy.com.springdemo.security.AppUserDetails;
 import com.telerikacademy.com.springdemo.services.ModelMapper;
 import com.telerikacademy.com.springdemo.services.BeerService;
 
@@ -20,11 +16,16 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -39,16 +40,15 @@ public class BeerController {
     private final ModelMapper modelMapper;
 
     private final AuthenticationHelper authenticationHelper;
-    private final BeerRepositoryImpl beerRepositoryImpl;
 
     @Autowired
-    public BeerController(BeerService beerService, ModelMapper modelMapper, UserService userService, RatingService ratingService, AuthenticationHelper authenticationHelper, BeerRepositoryImpl beerRepositoryImpl) {
+    public BeerController(BeerService beerService, ModelMapper modelMapper, UserService userService, RatingService ratingService, AuthenticationHelper authenticationHelper) {
         this.beerService = beerService;
         this.modelMapper = modelMapper;
         this.userService = userService;
         this.ratingService = ratingService;
         this.authenticationHelper = authenticationHelper;
-        this.beerRepositoryImpl = beerRepositoryImpl;
+
     }
 
 
@@ -66,9 +66,22 @@ public class BeerController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("{beerId}/rating/average")
+    public ResponseEntity<?> getAverageRating(@PathVariable Long beerId){
+
+        Beer beer = beerService.getById(beerId);
+        Double average = ratingService.getAvgRating(beer);
+
+        if (average == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "No ratings found for this beer."));
+        }
+
+        return ResponseEntity.ok(Map.of("averageRating", average));
+    }
 
     @GetMapping("/{id}")
-    public Beer getBeerById(@PathVariable int id) {
+    public Beer getBeerById(@PathVariable Long id) {
         try {
             return beerService.getById(id);
         } catch (EntityNotFoundException e) {
@@ -89,47 +102,131 @@ public class BeerController {
 
     }
 
-    @PostMapping
-    public Beer createBeer(@RequestHeader HttpHeaders headers, @Valid @RequestBody BeerDto beerDto) {
-        try {
-            User user = authenticationHelper.tryGetUser(headers);
-            Beer beer = modelMapper.fromDto(beerDto);
-            beer.setCreatedBy(user);
-            beerService.createBeer(beer);
-            return beer;
+//    @PostMapping
+//    public Beer createBeer(@RequestHeader HttpHeaders headers, @Valid @RequestBody BeerDto beerDto) {
+//        try {
+//            User user = authenticationHelper.tryGetUser(headers);
+//            Beer beer = modelMapper.fromDto(beerDto);
+//            beer.setCreatedBy(user);
+//            beerService.createBeer(beer);
+//            return beer;
+//
+//        } catch (DuplicateEntityException e) {
+//            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+//        }
+//
+//    }
 
-        } catch (DuplicateEntityException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+    @PostMapping("/{beerId}/rate")
+    public ResponseEntity<?> rateBeer(
+            @PathVariable Long beerId,
+            @RequestBody RatingDto ratingDto,
+            Authentication authentication) {
+
+        // Get user
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
+
+        // Get beer
+        Beer beer = beerService.getById(beerId);
+
+        // Save or update rating
+        ratingService.rateBeer(user, beer, ratingDto.getRatingScore());
+
+        return ResponseEntity.ok(Map.of("message", "Beer rated successfully"));
+    }
+    @PutMapping("/{beerId}/rate")
+    public ResponseEntity<?> updateRating(@PathVariable Long beerId,
+                                          @RequestBody RatingDto ratingDto,
+                                          Authentication authentication) {
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
+
+        Rating rating = ratingService.getUserRatingForBeer(user, beerId);
+
+        if (rating == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "No rating found to update."));
         }
 
+        rating.setRating(ratingDto.getRatingScore());
+        rating.setTimestamp(LocalDateTime.now());
+        ratingService.save(rating);
+
+        return ResponseEntity.ok(Map.of("message", "Rating updated successfully"));
     }
 
-    @PostMapping("/{id}/rating")
-    public void rate(@PathVariable int id, @RequestBody RatingDto ratingDto) {
-        var beer = getBeerById(id);
-        User user;
-        try {
+    @DeleteMapping("/{beerId}/rate")
+    public ResponseEntity<?> deleteRating(@PathVariable Long beerId,
+                                          Authentication authentication) {
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
-            user = userService.getById(ratingDto.getUserId());
+        Rating rating = ratingService.getUserRatingForBeer(user, beerId);
 
-
-        } catch (DuplicateEntityException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        if (rating == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "No rating found to delete."));
         }
 
-        ratingService.rate(user, beer, ratingDto.getRating());
-
+        ratingService.delete(rating);
+        return ResponseEntity.ok(Map.of("message", "Rating deleted successfully"));
     }
 
-    @GetMapping("/{id}/rating")
-    public Double rate(@PathVariable int id) {
-        var beer = getBeerById(id);
 
-        return ratingService.getAvgRating(beer);
+    @GetMapping("/{beerId}/rating/me")
+    public ResponseEntity<?> getMyRating(@PathVariable Long beerId, Authentication authentication) {
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
+
+        Rating rating = ratingService.
+                getUserRatingForBeer(user, beerId);
+
+        if (rating == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "You haven't rated this beer yet."));
+        }
+
+        return ResponseEntity.ok(Map.of("myRating", rating.getRating()));
     }
+    @GetMapping("/{beerId}/ratings")
+    public ResponseEntity<?> getAllRatings(@PathVariable Long beerId) {
+        Beer beer = beerService.getById(beerId);
+        List<Rating> ratings = ratingService.getAllRatingsForBeer(beer);
+
+        List<Map<String, Object>> response = ratings.stream().map(rating -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("user", rating.getUser().getUsername());
+            map.put("rating", rating.getRating());
+            map.put("timestamp", rating.getTimestamp());
+            map.put("beerName", rating.getBeer().getName());
+            return map;
+        }).toList();
+
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/ratings/me")
+    public ResponseEntity<?> getMyRatings(Authentication authentication) {
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
+
+        List<Rating> ratings = ratingService.getAllRatingsByUser(user);
+
+
+        List<Map<String, Object>> response = ratings.stream().map(rating -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("beerId", rating.getBeer().getId());
+            map.put("beerName", rating.getBeer().getName());
+            map.put("rating", rating.getRating());
+            map.put("timestamp", rating.getTimestamp());
+            return map;
+        }).toList();
+        return ResponseEntity.ok(response);
+    }
+
 
     @PutMapping("/{id}")
-    public Beer update(@RequestHeader HttpHeaders headers, @PathVariable int id, @Valid @RequestBody BeerDto beerDto) {
+    public Beer update(@RequestHeader HttpHeaders headers, @PathVariable Long id, @Valid @RequestBody BeerDto beerDto) {
 
         try {
             User user = authenticationHelper.tryGetUser(headers);
@@ -147,7 +244,7 @@ public class BeerController {
     }
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public void delete(@RequestHeader HttpHeaders headers, @PathVariable int id) {
+    public void delete(@RequestHeader HttpHeaders headers, @PathVariable Long id) {
 
         try {
             User user = authenticationHelper.tryGetUser(headers);

@@ -2,6 +2,8 @@ package com.telerikacademy.com.springdemo.models;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "beers_ratings")
 public class Rating {
@@ -23,6 +25,16 @@ public class Rating {
 
     @Column
     private double rating;
+
+    @Column(name = "timestamp", nullable = false)
+    private LocalDateTime timestamp;
+
+    @PrePersist
+    protected void onCreate() {
+        if (timestamp == null) {
+            timestamp = LocalDateTime.now();
+        }
+    }
 
     public Rating() {
     }
@@ -63,5 +75,12 @@ public class Rating {
 
     public int getId() {
         return id;
+    }
+
+    public void setTimestamp(LocalDateTime now) {
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 }

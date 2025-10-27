@@ -4,6 +4,7 @@ import com.telerikacademy.com.springdemo.models.RefreshToken;
 import com.telerikacademy.com.springdemo.models.User;
 import com.telerikacademy.com.springdemo.repositories.RefreshTokenRepository;
 import com.telerikacademy.com.springdemo.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.springframework.data.repository.util.ClassUtils.ifPresent;
 
 @Service
 public class RefreshTokenService {
@@ -28,8 +31,12 @@ public class RefreshTokenService {
         this.userService = userService;
         this.userRepository = userRepository;
     }
-
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
+
+        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
+        refreshTokenRepository.flush(); // force delete execution
+
         RefreshToken token = new RefreshToken();
         token.setUser(user);
         token.setToken(UUID.randomUUID().toString());
@@ -60,5 +67,18 @@ public class RefreshTokenService {
         refreshToken.setToken(UUID.randomUUID().toString());
 
         return refreshTokenRepository.save(refreshToken);
+    }
+    @Transactional
+    public void deleteAllByUser(User user) {
+        refreshTokenRepository.deleteByUser(user);
+    }
+
+    public void logPotentialReuse(String token) {
+        System.out.println("[SECURITY WARNING] Reused or invalid refresh token detected: " + token);
+        // Optionally: Store in an audit table or trigger alert
+    }
+    @Transactional
+    public void deleteByToken(String token) {
+        refreshTokenRepository.deleteByToken(token);
     }
 }

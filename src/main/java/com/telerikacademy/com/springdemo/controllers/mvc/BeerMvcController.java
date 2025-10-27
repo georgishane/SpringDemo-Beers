@@ -31,7 +31,7 @@ public class BeerMvcController {
 
     @GetMapping("/{id}")
 
-    public String showSingleBeer(@PathVariable int id, Model model){
+    public String showSingleBeer(@PathVariable Long id, Model model){
 
         try {
             Beer beer = beerService.getById(id);

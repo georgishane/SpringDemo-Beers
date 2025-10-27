@@ -33,7 +33,8 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @Autowired
-    public AuthController(UserService userService, RoleRepository roleRepository, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, JwtUtil jwtUtil, RefreshTokenService refreshTokenService) {
+    public AuthController(UserService userService, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+                          UserDetailsService userDetailsService, JwtUtil jwtUtil, RefreshTokenService refreshTokenService) {
         this.userService = userService;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -61,24 +62,20 @@ public class AuthController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(dto.getUsername());
 
             if (passwordEncoder.matches(dto.getPassword(), userDetails.getPassword())) {
-
-                   String accessToken = jwtUtil.generateToken(userDetails, 15 * 60 * 1000); // 15 mins
-                // String refreshToken = jwtUtil.generateToken(userDetails, 7 * 24 * 60 * 60 * 1000); // 7 days
+                String accessToken = jwtUtil.generateToken(userDetails, 15 * 60 * 1000); // 15 mins
 
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(((AppUserDetails) userDetails).getUser());
-                String refreshTokenStr = refreshToken.getToken();
 
-                LoginResponseDto tokens = new LoginResponseDto(accessToken, refreshTokenStr);
-                ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshTokenStr)
+                ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken.getToken())
                         .httpOnly(true)
-                        .secure(false) // true in production with HTTPS
+                        .secure(false)
                         .path("/auth/refresh")
-                        .maxAge(7 * 24 * 60 * 60) // 7 days
+                        .maxAge(7 * 24 * 60 * 60)
                         .build();
 
                 return ResponseEntity.ok()
                         .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                        .body(tokens); // return access token in body
+                        .body(new LoginResponseDto(accessToken, refreshToken.getToken()));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
@@ -88,48 +85,55 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
-        // Nothing to do here if JWT is stateless
+    public ResponseEntity<String> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                         Authentication authentication) {
+        if (refreshToken != null) {
+            refreshTokenService.deleteByToken(refreshToken);
+        }
+        if (authentication != null && authentication.isAuthenticated()) {
+            AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+            refreshTokenService.deleteAllByUser(userDetails.getUser());
+        }
         return ResponseEntity.ok("Logged out successfully. Please discard your token.");
-    }
-
-    @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@RequestBody TokenRefreshRequest request) {
-        String refreshToken = request.getRefreshToken();
-
-        return refreshTokenService.findByToken(refreshToken)
-                .map(refreshTokenService::verifyExpiration)
-                .map(RefreshToken::getUser)
-                .map(user -> {
-                    String newAccessToken = jwtUtil.generateToken(new AppUserDetails(user), 15 * 60 * 1000);
-                    return ResponseEntity.ok(
-                            new TokenRefreshResponse(newAccessToken, refreshToken));
-                })
-                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
+
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token is missing");
         }
 
         return refreshTokenService.findByToken(refreshToken)
-                .map(refreshTokenService::verifyExpiration)
-                .map(RefreshToken::getUser)
-                .map(user -> {
-//                    String newAccessToken = jwtUtil.generateToken(
-//                            userDetailsService.loadUserByUsername(user.getUsername()),
-//                            15 * 60 * 1000
-//                    );
-                    RefreshToken newToken = refreshTokenService.createRefreshToken((long) user.getUserId());
-                    LoginResponseDto tokens = new LoginResponseDto(accessToken, newToken.getToken());
-                    return ResponseEntity.ok(Map.of("accessToken", newToken));
+                .map(storedToken -> {
+                    try {
+                        refreshTokenService.verifyExpiration(storedToken);
+                    } catch (Exception e) {
+                        refreshTokenService.deleteByToken(refreshToken);
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Expired refresh token"));
+                    }
+
+                    User user = storedToken.getUser();
+                    refreshTokenService.deleteByToken(refreshToken);
+                    RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
+                    String newAccessToken = jwtUtil.generateToken(userDetailsService.loadUserByUsername(user.getUsername()), 15 * 60 * 1000);
+
+                    ResponseCookie cookie = ResponseCookie.from("refresh_token", newRefreshToken.getToken())
+                            .httpOnly(true)
+                            .secure(false)
+                            .path("/auth/refresh")
+                            .maxAge(7 * 24 * 60 * 60)
+                            .build();
+
+                    return ResponseEntity.ok()
+                            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                            .body(new LoginResponseDto(newAccessToken, newRefreshToken.getToken()));
                 })
-                .orElseGet(() ->
-                        ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                .body(Map.of("error", "Invalid refresh token"))
-                );
+                .orElseGet(() -> {
+                    // Reuse detection or tampering attempt
+                    refreshTokenService.logPotentialReuse(refreshToken);
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid refresh token"));
+                });
     }
 
     @GetMapping("/me")
@@ -150,6 +154,4 @@ public class AuthController {
     public ResponseEntity<?> test() {
         return ResponseEntity.ok(Map.of("message", "Success — you're authenticated"));
     }
-
-
 }

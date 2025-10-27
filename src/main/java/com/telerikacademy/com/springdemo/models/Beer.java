@@ -47,7 +47,7 @@ public class  Beer {
         this.style = style;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 

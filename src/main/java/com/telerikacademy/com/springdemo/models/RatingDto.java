@@ -8,10 +8,10 @@ public class RatingDto {
 
     private int userId;
 
-    @Min(0)
+    @Min(1)
     @Max(5)
     @Positive(message = "Rating should be positive.")
-    private double rating;
+    private double ratingScore;
 
     public RatingDto() {
     }
@@ -24,11 +24,11 @@ public class RatingDto {
         this.userId = userId;
     }
 
-    public double getRating() {
-        return rating;
+    public double getRatingScore() {
+        return ratingScore;
     }
 
-    public void setRating(double rating) {
-        this.rating = rating;
+    public void setRatingScore(double ratingScore) {
+        this.ratingScore = ratingScore;
     }
 }
