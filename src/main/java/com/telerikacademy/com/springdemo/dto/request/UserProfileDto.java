@@ -1,4 +1,4 @@
-package com.telerikacademy.com.springdemo.models;
+package com.telerikacademy.com.springdemo.dto.request;
 
 import java.util.List;
 

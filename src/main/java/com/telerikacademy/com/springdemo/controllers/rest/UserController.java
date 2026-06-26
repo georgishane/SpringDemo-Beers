@@ -1,6 +1,9 @@
 package com.telerikacademy.com.springdemo.controllers.rest;
 
 import com.telerikacademy.com.springdemo.controllers.AuthenticationHelper;
+import com.telerikacademy.com.springdemo.dto.request.UserProfileDto;
+import com.telerikacademy.com.springdemo.dto.request.UserUpdateDto;
+import com.telerikacademy.com.springdemo.dto.response.CommentResponseDTO;
 import com.telerikacademy.com.springdemo.exceptions.DuplicateEntityException;
 import com.telerikacademy.com.springdemo.exceptions.EntityNotFoundException;
 import com.telerikacademy.com.springdemo.exceptions.UnauthorizedOperationException;
@@ -16,16 +19,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
@@ -58,7 +60,7 @@ public class UserController {
 
 
     @GetMapping("/{id}")
-    public User getUserById(@RequestHeader HttpHeaders headers, @PathVariable int id){
+    public User getUserById(@RequestHeader HttpHeaders headers, @PathVariable Long id){
         try {
             authenticationHelper.tryGetUser(headers);
             return userService.getById(id);
@@ -70,7 +72,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/wish-list")
-    public Set<Beer> getUserWishList(@RequestHeader HttpHeaders headers, @PathVariable int id){
+    public Set<Beer> getUserWishList(@RequestHeader HttpHeaders headers, @PathVariable Long id){
         try {
             return getUserById(headers,id).getWishList();
         } catch (EntityNotFoundException e) {
@@ -80,7 +82,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/wish-list")
-    public void addBeerToWishList(@RequestHeader HttpHeaders headers, @PathVariable int userId,
+    public void addBeerToWishList(@RequestHeader HttpHeaders headers, @PathVariable Long userId,
                                        @Valid @RequestBody Map<String, Object> body){
 
         var user = getUserById(headers, userId);
@@ -105,15 +107,17 @@ public class UserController {
     public ResponseEntity<UserProfileDto> getCurrentUserProfile(Authentication authentication) {
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
         User user = userDetails.getUser();
-        System.out.println("User: " + user);
+
+        Logger.getLogger(UserController.class.getName()).info("User: " + user);
         PersonalInfo personalInfo = user.getPersonalInfo();
-        System.out.println("PersonalInfo: " + personalInfo);
+
+        Logger.getLogger(UserController.class.getName()).info("PersonalInfo: " + personalInfo);
         List<String> roles = user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toList());
 
         UserProfileDto dto = new UserProfileDto(
-                (long) user.getUserId(),
+                user.getUserId(),
                 user.getUsername(),
                 personalInfo.getEmail(),
                 roles
@@ -131,7 +135,8 @@ public class UserController {
 
         // Update personal info (create it if null)
         PersonalInfo personalInfo = user.getPersonalInfo();
-        System.out.println("personalInfo" + personalInfo);
+
+        Logger.getLogger(UserController.class.getName()).info("PersonalInfo: " + personalInfo);
         if (personalInfo == null) {
             personalInfo = new PersonalInfo();
             user.setPersonalInfo(personalInfo);
@@ -150,7 +155,7 @@ public class UserController {
                 .collect(Collectors.toList());
 
         UserProfileDto updatedDto = new UserProfileDto(
-                (long) user.getUserId(),
+                user.getUserId(),
                 user.getUsername(),
                 personalInfo.getEmail(),
                 roles

@@ -1,4 +1,4 @@
-package com.telerikacademy.com.springdemo.models;
+package com.telerikacademy.com.springdemo.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

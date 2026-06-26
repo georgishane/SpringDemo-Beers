@@ -1,29 +1,39 @@
 package com.telerikacademy.com.springdemo.models;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "beers_ratings")
-public class Rating {
+@Table(name = "beers_ratings",
+uniqueConstraints = {
+@UniqueConstraint(columnNames = {"user_id", "beer_id"})
+    }
+)
 
+public class Rating {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
    // @SequenceGenerator(name = "beers_ratings_seq", sequenceName = "beers_ratings_seq", allocationSize = 1)
     @Column(name = "id")
-    private int id;
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "beer_id")
     private Beer beer;
 
-    @Column
+    @Column(nullable = false)
     private double rating;
 
     @Column(name = "timestamp", nullable = false)
@@ -36,51 +46,4 @@ public class Rating {
         }
     }
 
-    public Rating() {
-    }
-
-    public Rating(User user, Beer beer, double rating) {
-        setUser(user);
-        setBeer(beer);
-        setRating(rating);
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Beer getBeer() {
-        return beer;
-    }
-
-    public void setBeer(Beer beer) {
-        this.beer = beer;
-    }
-
-    public double getRating() {
-        return rating;
-    }
-
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setTimestamp(LocalDateTime now) {
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
 }

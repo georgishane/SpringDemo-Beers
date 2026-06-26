@@ -7,7 +7,8 @@ import com.telerikacademy.com.springdemo.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
@@ -15,10 +16,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class RefreshTokenServiceTest {
+
+    private static final long USER_ID = 1L;
 
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
@@ -33,28 +38,23 @@ public class RefreshTokenServiceTest {
     private RefreshToken mockToken;
 
     @BeforeEach
-    public void setup() {
-        mockUser = new User();
-        mockUser.setUserId(1);
-        mockUser.setUsername("testuser");
-
-        mockToken = new RefreshToken();
-        mockToken.setId(1L);
-        mockToken.setUser(mockUser);
-        mockToken.setToken(UUID.randomUUID().toString());
-        mockToken.setExpiryDate(Instant.now().plusSeconds(60));
+    public void setUp() {
+        mockUser = buildUser(USER_ID, "testuser");
+        mockToken = buildToken(1L, mockUser, Instant.now().plusSeconds(60));
     }
+
+    // ... existing code ...
 
     @Test
     public void testCreateRefreshToken_ShouldReturnNewToken() {
         when(userRepository.findById(mockUser.getUserId())).thenReturn(Optional.of(mockUser));
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(mockToken);
 
-        RefreshToken created = refreshTokenService.createRefreshToken((long) mockUser.getUserId());
+        RefreshToken createdToken = refreshTokenService.createRefreshToken(mockUser.getUserId());
 
-        assertNotNull(created);
-        assertEquals(mockUser, created.getUser());
-        assertNotNull(created.getToken());
+        assertNotNull(createdToken);
+        assertEquals(mockUser, createdToken.getUser());
+        assertNotNull(createdToken.getToken());
     }
 
     @Test
@@ -77,10 +77,7 @@ public class RefreshTokenServiceTest {
     public void testVerifyExpiration_ShouldThrowIfExpired() {
         mockToken.setExpiryDate(Instant.now().minusSeconds(60)); // expired
 
-        assertThrows(RuntimeException.class, () -> {
-            refreshTokenService.verifyExpiration(mockToken);
-        });
-
+        assertThrows(RuntimeException.class, () -> refreshTokenService.verifyExpiration(mockToken));
         verify(refreshTokenRepository).delete(mockToken);
     }
 
@@ -95,5 +92,22 @@ public class RefreshTokenServiceTest {
         refreshTokenService.deleteAllByUser(mockUser);
         verify(refreshTokenRepository).deleteByUser(mockUser);
     }
-}
 
+    // ... existing code ...
+
+    private static User buildUser(long userId, String username) {
+        User user = new User();
+        user.setUserId(userId);
+        user.setUsername(username);
+        return user;
+    }
+
+    private static RefreshToken buildToken(long id, User user, Instant expiryDate) {
+        RefreshToken token = new RefreshToken();
+        token.setId(id);
+        token.setUser(user);
+        token.setToken(UUID.randomUUID().toString());
+        token.setExpiryDate(expiryDate);
+        return token; 
+    }
+}

@@ -1,5 +1,6 @@
-package com.telerikacademy.com.springdemo.models;
+package com.telerikacademy.com.springdemo.dto.response;
 
+import com.telerikacademy.com.springdemo.models.ReportStatus;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;

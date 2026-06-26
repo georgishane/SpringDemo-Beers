@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService, UserDetailsService{
 
     @Transactional
     @Override
-    public User getById(int id) {
+    public User getById(Long id) {
 
        return repository.findById(id)
                .orElseThrow(()-> new EntityNotFoundException("User",id));

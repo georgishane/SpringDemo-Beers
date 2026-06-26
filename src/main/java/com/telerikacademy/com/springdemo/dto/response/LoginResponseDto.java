@@ -1,4 +1,4 @@
-package com.telerikacademy.com.springdemo.models;
+package com.telerikacademy.com.springdemo.dto.response;
 
 public class LoginResponseDto {
     private String accessToken;

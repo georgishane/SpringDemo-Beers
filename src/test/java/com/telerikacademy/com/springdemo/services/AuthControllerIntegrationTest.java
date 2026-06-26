@@ -1,7 +1,7 @@
 package com.telerikacademy.com.springdemo.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.telerikacademy.com.springdemo.models.UserRegisterDto;
+import com.telerikacademy.com.springdemo.dto.request.UserRegisterDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

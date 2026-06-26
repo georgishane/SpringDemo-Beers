@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -24,6 +25,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Configuration
 @EnableWebSecurity
@@ -41,16 +43,21 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers("/auth/**").permitAll()
-
+                        .requestMatchers("/api/beers/search/**").permitAll()
                         // Authenticated user endpoints
                         .requestMatchers("/api/users/me").authenticated()
                         .requestMatchers("/api/comments/**").authenticated()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
 
                         // Admin-only endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/beers/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/beers/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/beers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/beers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/beers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/beers/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         // All other requests require authentication
@@ -62,23 +69,23 @@ public class SecurityConfig {
                 // Exception handling
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((req, res, e) -> {
-                            System.out.println("⚠️ AuthHandler triggered: " + e.getMessage());
+
+                            Logger.getLogger(SecurityConfig.class.getName()).info("AuthHandler triggered: " + e.getMessage());
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             res.setContentType("application/json");
                             ApiError error = new ApiError(
-                                    HttpServletResponse.SC_UNAUTHORIZED,
-                                    "Unauthorized",
+                                    HttpStatus.UNAUTHORIZED,
                                     e.getMessage() != null ? e.getMessage() : "Authentication required"
                             );
                             new ObjectMapper().writeValue(res.getOutputStream(), error);
                         })
                         .accessDeniedHandler((req, res, e) -> {
-                            System.out.println("⚠️ AccessDeniedHandler triggered: " + e.getMessage());
+
+                            Logger.getLogger(SecurityConfig.class.getName()).info("AccessDeniedHandler triggered: " + e.getMessage());
                             res.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             res.setContentType("application/json");
                             ApiError error = new ApiError(
-                                    HttpServletResponse.SC_FORBIDDEN,
-                                    "Forbidden",
+                                    HttpStatus.FORBIDDEN,
                                     e.getMessage() != null ? e.getMessage() : "You don’t have permission to access this resource"
                             );
                             new ObjectMapper().writeValue(res.getOutputStream(), error);

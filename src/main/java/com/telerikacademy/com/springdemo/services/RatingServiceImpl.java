@@ -3,7 +3,9 @@ package com.telerikacademy.com.springdemo.services;
 import com.telerikacademy.com.springdemo.exceptions.EntityNotFoundException;
 import com.telerikacademy.com.springdemo.models.Beer;
 import com.telerikacademy.com.springdemo.models.Rating;
+import com.telerikacademy.com.springdemo.dto.response.RatingResponseDTO;
 import com.telerikacademy.com.springdemo.models.User;
+import com.telerikacademy.com.springdemo.repositories.BeerRepository;
 import com.telerikacademy.com.springdemo.repositories.RatingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,11 +19,11 @@ import java.util.Optional;
 public class RatingServiceImpl implements RatingService {
 
     private final RatingRepository repository;
-    private final BeerService beerService;
+    private final BeerRepository beerRepository;
     @Autowired
-    public RatingServiceImpl(RatingRepository repository, BeerService beerService) {
+    public RatingServiceImpl(RatingRepository repository, BeerRepository beerRepository) {
         this.repository = repository;
-        this.beerService = beerService;
+        this.beerRepository = beerRepository;
     }
 
     @Override
@@ -43,7 +45,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public Rating getUserRatingForBeer(User user, Long beerId) {
-        Beer beer = beerService.getById(beerId); // Or directly with Long if updated
+        Beer beer = beerRepository.findById(beerId).orElseThrow(() -> new EntityNotFoundException("Beer not found with id: " + beerId));;
         return repository.findByUserAndBeer(user, beer).orElse(null);
     }
     @Transactional
@@ -63,6 +65,50 @@ public class RatingServiceImpl implements RatingService {
 
         return repository.save(rating);
     }
+
+    @Transactional
+    @Override
+    public RatingResponseDTO rateBeer(Long beerId, Double ratingValue, User user) {
+        if (repository.existsByUser_UserIdAndBeer_Id(user.getUserId(), beerId)) {
+            throw new IllegalStateException("User has already rated this beer");
+        }
+
+        Beer beer = beerRepository.findById(beerId)
+                .orElseThrow(() -> new EntityNotFoundException("Beer not found"));
+
+        Rating rating = new Rating();
+        rating.setBeer(beer);
+        rating.setUser(user);
+        rating.setRating(ratingValue);
+        Double avg = repository.findAverageByBeerId(beerId);
+
+        repository.save(rating);
+
+        return new RatingResponseDTO(
+                beerId,
+                rating.getRating(),
+                avg
+        );
+    }
+
+    @Transactional
+    @Override
+    public RatingResponseDTO updateRating(Long beerId, Double ratingValue, User user) {
+        Rating rating = repository.findByUser_UserIdAndBeer_Id(user.getUserId(), beerId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Rating does not exist"));
+
+        rating.setRating(ratingValue);
+        Double avg = repository.findAverageByBeerId(beerId);
+        repository.save(rating);
+
+        return new RatingResponseDTO(
+                beerId,
+                rating.getRating(),
+                avg
+        );
+    }
+
     @Transactional
     @Override
     public void save(Rating rating) {
@@ -76,5 +122,14 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public List<Rating> getAllRatingsByUser(User user) {
         return repository.findAllByUser(user);
+    }
+
+    @Override
+    public Double getAvgRatingByBeerId(Long beerId) {
+
+            Double avg = repository.findAverageByBeerId(beerId);
+            return avg;
+
+
     }
 }

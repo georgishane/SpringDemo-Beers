@@ -14,7 +14,7 @@ public class Helpers {
     personalInfo.setLastName("MockLastName");
     personalInfo.setEmail("mock@user.com");
     mockUser.setPersonalInfo(personalInfo);
-    mockUser.setUserId(1);
+    mockUser.setUserId(1L);
     mockUser.setUsername("MockUsername");
     mockUser.setPassword("MockPass");
     mockUser.setRoles(Set.of(createMockRole()));
@@ -23,7 +23,7 @@ public class Helpers {
 
     public static Beer createMockBeer(){
         var mockBeer = new Beer();
-        mockBeer.setId(1);
+        mockBeer.setId(1L);
         mockBeer.setName("TestBeer");
         mockBeer.setCreatedBy(createMockUser());
         mockBeer.setStyle(createMockStyle());

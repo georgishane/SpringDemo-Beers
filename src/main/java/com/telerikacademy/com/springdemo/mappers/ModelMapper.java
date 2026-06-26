@@ -1,6 +1,9 @@
-package com.telerikacademy.com.springdemo.services;
+package com.telerikacademy.com.springdemo.mappers;
 
 
+import com.telerikacademy.com.springdemo.dto.request.CommentRequestDTO;
+import com.telerikacademy.com.springdemo.dto.response.BeerDto;
+import com.telerikacademy.com.springdemo.dto.response.CommentResponseDTO;
 import com.telerikacademy.com.springdemo.exceptions.EntityNotFoundException;
 import com.telerikacademy.com.springdemo.models.*;
 import com.telerikacademy.com.springdemo.repositories.BeerRepository;
@@ -10,8 +13,6 @@ import com.telerikacademy.com.springdemo.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Optional;
 
 @Component
 public class ModelMapper {
@@ -36,7 +37,7 @@ public class ModelMapper {
     }
 
     public Beer fromDto(BeerDto beerDto, Long id){
-        Beer beer = beerRepository.getById(id);
+        Beer beer = beerRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Beer not found with id: " + id));
         dtoToObject(beerDto, beer);
         return beer;
     }
@@ -58,5 +59,13 @@ public class ModelMapper {
         Comment comment = commentRepository.findCommentById(commentId);
         dtoToObject(commentRequestDTODto, comment);
         return comment;
+    }
+    public CommentResponseDTO toDto(Comment comment) {
+        CommentResponseDTO dto = new CommentResponseDTO();
+        dto.setId(comment.getId());
+        dto.setUserName((comment.getUser().getUsername()));
+        dto.setText(comment.getText());
+        dto.setCreatedAt(comment.getCreatedAt());
+        return dto;
     }
 }

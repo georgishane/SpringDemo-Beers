@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpecificationExecutor<Comment> {
     List<Comment> findAllByBeerId(Long beerId);
-    List<Comment> findAllByUser_UserId(int userId);
+    List<Comment> findByBeerIdOrderByCreatedAtDesc(Long userId);
     Comment findCommentById(Long id);
     List<Comment> findByUser(User user);
 }

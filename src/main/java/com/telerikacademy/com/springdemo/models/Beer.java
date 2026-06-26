@@ -12,7 +12,7 @@ public class  Beer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "beer_id")
-    private int id;
+    private Long id;
 
     @Column(name = "name")
     private String name;
@@ -29,7 +29,7 @@ public class  Beer {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    public Beer(int id, String name, double abv) {
+    public Beer(Long id, String name, double abv) {
         this.id = id;
         this.name = name;
         this.abv = abv;
@@ -59,7 +59,7 @@ public class  Beer {
         return abv;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

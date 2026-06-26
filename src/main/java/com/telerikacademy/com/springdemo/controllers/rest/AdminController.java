@@ -1,5 +1,8 @@
 package com.telerikacademy.com.springdemo.controllers.rest;
 
+import com.telerikacademy.com.springdemo.dto.request.ReportCommentRequestDTO;
+import com.telerikacademy.com.springdemo.dto.request.UserListDto;
+import com.telerikacademy.com.springdemo.dto.response.ReportCommentResponseDTO;
 import com.telerikacademy.com.springdemo.models.*;
 import com.telerikacademy.com.springdemo.repositories.UserRepository;
 import com.telerikacademy.com.springdemo.services.CommentReportService;
@@ -8,13 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api/admin")
+@RequestMapping("/api/admin")
 public class AdminController {
     private final UserRepository userRepository;
     private final CommentReportService reportService;
@@ -46,7 +48,7 @@ public class AdminController {
     }
     @DeleteMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteUser(@PathVariable int id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         Optional<User> userOptional = userRepository.findById(id);
 
         if (userOptional.isEmpty()) {

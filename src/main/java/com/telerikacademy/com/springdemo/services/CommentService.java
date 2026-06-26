@@ -1,11 +1,10 @@
 package com.telerikacademy.com.springdemo.services;
 
 import com.telerikacademy.com.springdemo.models.Comment;
-import com.telerikacademy.com.springdemo.models.CommentRequestDTO;
+import com.telerikacademy.com.springdemo.dto.request.CommentRequestDTO;
 import com.telerikacademy.com.springdemo.models.User;
 import org.springframework.data.domain.Page;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface CommentService {

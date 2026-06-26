@@ -1,5 +1,7 @@
 package com.telerikacademy.com.springdemo.exceptions;
 
+import org.springframework.http.HttpStatus;
+
 import java.time.LocalDateTime;
 
 public class ApiError {
@@ -8,9 +10,9 @@ public class ApiError {
     private String message;
     private LocalDateTime timestamp;
 
-    public ApiError(int status, String error, String message) {
-        this.status = status;
-        this.error = error;
+    public ApiError(HttpStatus status, String message) {
+        this.status = status.value();
+        this.error = status.getReasonPhrase();
         this.message = message;
         this.timestamp = LocalDateTime.now();
     }

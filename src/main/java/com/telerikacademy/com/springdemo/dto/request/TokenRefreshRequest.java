@@ -1,4 +1,4 @@
-package com.telerikacademy.com.springdemo.models;
+package com.telerikacademy.com.springdemo.dto.request;
 
 public class TokenRefreshRequest {
     private String refreshToken;

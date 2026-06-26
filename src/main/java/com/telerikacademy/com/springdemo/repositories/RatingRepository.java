@@ -22,5 +22,11 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
 
     List<Rating> findAllByBeerOrderByTimestampDesc(Beer beer);
     List<Rating> findAllByUser(User user);
+    @Query("SELECT AVG(r.rating) FROM Rating r WHERE r.beer.id = :beerId")
+    Double findAverageByBeerId(@Param("beerId") Long beerId);
+    long countByBeerId(Long beerId);
+    Optional<Rating> findByUser_UserIdAndBeer_Id(Long userId, Long beerId);
+
+    boolean existsByUser_UserIdAndBeer_Id(Long userId, Long beerId);
 
 }

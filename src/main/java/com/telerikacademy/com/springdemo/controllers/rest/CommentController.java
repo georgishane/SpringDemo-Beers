@@ -1,6 +1,11 @@
 package com.telerikacademy.com.springdemo.controllers.rest;
 
+import com.telerikacademy.com.springdemo.dto.request.CommentRequestDTO;
+import com.telerikacademy.com.springdemo.dto.request.ReportCommentRequestDTO;
+import com.telerikacademy.com.springdemo.dto.response.CommentResponseDTO;
+import com.telerikacademy.com.springdemo.dto.response.ReportCommentResponseDTO;
 import com.telerikacademy.com.springdemo.exceptions.UnauthorizedOperationException;
+import com.telerikacademy.com.springdemo.mappers.ModelMapper;
 import com.telerikacademy.com.springdemo.models.*;
 import com.telerikacademy.com.springdemo.security.AppUserDetails;
 import com.telerikacademy.com.springdemo.services.*;
@@ -10,9 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -89,7 +93,8 @@ public class CommentController {
 
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
         User user = userDetails.getUser();
-        System.out.println("request"+request);
+
+        Logger.getLogger(CommentController.class.getName()).info("request"+request);
         CommentReport savedReport = reportService.reportComment(commentId, user, request.getReason());
 
         ReportCommentResponseDTO response = ReportCommentResponseDTO.builder()
@@ -109,7 +114,8 @@ public class CommentController {
         List<Comment> comments = commentService.getCommentsByBeer(beerId);
 
         List<Map<String, Object>> response = comments.stream().map(comment -> {
-            Map<String, Object> map = new HashMap<>();
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("commentId", comment.getId());
             map.put("user", comment.getUser().getUsername());
             map.put("beerName", comment.getBeer().getName());
             map.put("text", comment.getText());

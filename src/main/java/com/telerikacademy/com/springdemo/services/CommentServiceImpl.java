@@ -3,7 +3,7 @@ package com.telerikacademy.com.springdemo.services;
 import com.telerikacademy.com.springdemo.exceptions.EntityNotFoundException;
 import com.telerikacademy.com.springdemo.models.Beer;
 import com.telerikacademy.com.springdemo.models.Comment;
-import com.telerikacademy.com.springdemo.models.CommentRequestDTO;
+import com.telerikacademy.com.springdemo.dto.request.CommentRequestDTO;
 import com.telerikacademy.com.springdemo.models.User;
 import com.telerikacademy.com.springdemo.repositories.BeerRepository;
 import com.telerikacademy.com.springdemo.repositories.CommentRepository;

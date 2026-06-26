@@ -10,6 +10,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -63,10 +64,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
             } catch (io.jsonwebtoken.ExpiredJwtException e) {
-                writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized", "Token expired");
+                writeErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token expired");
                 return;
             } catch (io.jsonwebtoken.JwtException e) {
-                writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized", "Invalid token");
+                writeErrorResponse(response, HttpStatus.UNAUTHORIZED, "Invalid token");
                 return;
             }
         }
@@ -74,10 +75,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void writeErrorResponse(HttpServletResponse response, int status, String error, String message) throws IOException {
-        response.setStatus(status);
+    private void writeErrorResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
         response.setContentType("application/json");
-        ApiError apiError = new ApiError(status, error, message);
+        ApiError apiError = new ApiError(status, message);
         new ObjectMapper().writeValue(response.getOutputStream(), apiError);
     }
 }

@@ -2,11 +2,13 @@ package com.telerikacademy.com.springdemo.services;
 
 import com.telerikacademy.com.springdemo.models.Beer;
 import com.telerikacademy.com.springdemo.models.User;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
 public interface UserService {
-    User getById(int id);
+
+    User getById(Long id);
 
     List<User> getAll();
 

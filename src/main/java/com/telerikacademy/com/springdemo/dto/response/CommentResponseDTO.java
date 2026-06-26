@@ -1,4 +1,4 @@
-package com.telerikacademy.com.springdemo.models;
+package com.telerikacademy.com.springdemo.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

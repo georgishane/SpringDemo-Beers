@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import static org.springframework.data.repository.util.ClassUtils.ifPresent;
 
@@ -62,7 +63,7 @@ public class RefreshTokenService {
 
     public RefreshToken createRefreshToken(Long userId) {
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(userRepository.findById(Math.toIntExact(userId)).orElseThrow());
+        refreshToken.setUser(userRepository.findById(userId).orElseThrow());
         refreshToken.setExpiryDate(Instant.now().plusMillis(7 * 24 * 60 * 60 * 1000)); // 7 days
         refreshToken.setToken(UUID.randomUUID().toString());
 
@@ -74,7 +75,8 @@ public class RefreshTokenService {
     }
 
     public void logPotentialReuse(String token) {
-        System.out.println("[SECURITY WARNING] Reused or invalid refresh token detected: " + token);
+
+        Logger.getLogger(RefreshTokenService.class.getName()).warning("Reused or invalid refresh token detected: " + token);
         // Optionally: Store in an audit table or trigger alert
     }
     @Transactional

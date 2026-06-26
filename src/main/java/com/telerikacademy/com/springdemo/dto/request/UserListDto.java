@@ -1,21 +1,21 @@
-package com.telerikacademy.com.springdemo.models;
+package com.telerikacademy.com.springdemo.dto.request;
 
 public class UserListDto {
-    private int id;
+    private Long id;
     private String username;
     private String email;
 
-    public UserListDto(int id, String username, String email) {
+    public UserListDto(Long id, String username, String email) {
         this.id = id;
         this.username = username;
         this.email = email;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

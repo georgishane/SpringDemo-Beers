@@ -31,6 +31,7 @@ public class CommentReport {
     @Column(name = "reason")
     private String reason;
 
+    @Builder.Default
     @Column(name = "reported_at")
     private LocalDateTime reportedAt = LocalDateTime.now();
 

@@ -1,5 +1,7 @@
 package com.telerikacademy.com.springdemo.controllers;
 
+import com.telerikacademy.com.springdemo.dto.request.UserRegisterDto;
+import com.telerikacademy.com.springdemo.dto.response.LoginResponseDto;
 import com.telerikacademy.com.springdemo.models.*;
 import com.telerikacademy.com.springdemo.repositories.RoleRepository;
 import com.telerikacademy.com.springdemo.security.AppUserDetails;

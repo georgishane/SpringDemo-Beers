@@ -1,9 +1,8 @@
 package com.telerikacademy.com.springdemo.services;
 
-import com.telerikacademy.com.springdemo.models.Beer;
-import com.telerikacademy.com.springdemo.models.BeerDto;
-import com.telerikacademy.com.springdemo.models.BeerResponseDTO;
-import com.telerikacademy.com.springdemo.models.User;
+import com.telerikacademy.com.springdemo.dto.request.BeerDetailsDTO;
+import com.telerikacademy.com.springdemo.models.*;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -16,6 +15,7 @@ public interface BeerService {
 
     Beer getByName (String name);
 
+    BeerDetailsDTO getBeerDetails(Long id);
     void createBeer(Beer beer);
 
     void updateBeer(Beer beer, User user);
@@ -23,13 +23,5 @@ public interface BeerService {
     @Transactional
     void delete(Long id, User user);
 
-    public List<BeerResponseDTO> searchBeers(
-            String name,
-            String type,
-            Double minAbv,
-            Double maxAbv,
-            String sortBy,
-            String direction
-    );
-
+    Page<Beer> searchBeers(String name, String style, Double minAbv, Double maxAbv, String sortBy, String direction, int page, int size);
 }

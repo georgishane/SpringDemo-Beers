@@ -2,18 +2,20 @@ package com.telerikacademy.com.springdemo.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@Data
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private int userId;
+    private Long userId;
 
     @Column(name = "username")
     private String username;
@@ -46,56 +48,8 @@ public class User {
    )
    private Set<Role> roles;
 
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
     public User(){
 
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<Beer> getWishList() {
-        return wishList;
-    }
-
-    public void setWishList(Set<Beer> wishList) {
-        this.wishList = wishList;
-
-    }
-    public PersonalInfo getPersonalInfo() {
-        return personalInfo;
-    }
-
-    public void setPersonalInfo(PersonalInfo personalInfo) {
-        this.personalInfo = personalInfo;
     }
     public boolean hasRole(String roleName){
 
@@ -107,7 +61,7 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return userId == user.userId && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(wishList, user.wishList) && Objects.equals(personalInfo, user.personalInfo) && Objects.equals(roles, user.roles);
+        return Objects.equals(userId, user.userId) && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(wishList, user.wishList) && Objects.equals(personalInfo, user.personalInfo) && Objects.equals(roles, user.roles);
     }
 
     @Override

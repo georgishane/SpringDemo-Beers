@@ -1,5 +1,6 @@
 package com.telerikacademy.com.springdemo.services;
 
+import com.telerikacademy.com.springdemo.dto.response.ReportCommentResponseDTO;
 import com.telerikacademy.com.springdemo.exceptions.EntityNotFoundException;
 import com.telerikacademy.com.springdemo.models.*;
 import com.telerikacademy.com.springdemo.repositories.CommentReportRepository;
